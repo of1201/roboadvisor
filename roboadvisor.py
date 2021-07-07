@@ -38,8 +38,8 @@ riskAver = ws[list(wb.defined_names['riskAver'].destinations)[0][1]].value  # ri
 # data is from 2007/01/01
 
 # ETFs
-df_ESG = pd.read_excel(dir + r'\database\ESG_Prices.xlsx', sheet_name='Prices', index_col=0)
-df_nonESG = pd.read_excel(dir + r'\database\NonESG_Prices.xlsx', sheet_name='Prices', index_col=0)
+df_ESG = pd.read_excel(dir + r'\ESG_Prices.xlsx', sheet_name='Prices', index_col=0)
+df_nonESG = pd.read_excel(dir + r'\NonESG_Prices.xlsx', sheet_name='Prices', index_col=0)
 ret_ESG = df_ESG.pct_change().iloc[1:].loc[:reportDate]
 ret_nonESG = df_nonESG.pct_change().iloc[1:].loc[:reportDate]
 
@@ -80,14 +80,14 @@ tickers_ESG_equity_USD = ['XLB', 'SOXX']
 # --------------------------------------------------------------------------------------------------------------
 
 # factors
-factors = pd.read_csv(dir + r'\database\FF_5_Factor.csv', index_col=0)
+factors = pd.read_csv(dir + r'\FF_5_Factor.csv', index_col=0)
 rf = pd.DataFrame(factors['RF'].iloc[1:], columns=['RF'])
 ret_factor = factors.drop('RF', axis=1).iloc[1:]
 rf.set_index(dates, inplace=True)
 ret_factor.set_index(dates, inplace=True)
 
 # CAD/USD FX rate
-FX = pd.read_csv(dir + r'\database\USD_CAD_Historical_Data.csv', index_col=0)
+FX = pd.read_csv(dir + r'\USD_CAD_Historical_Data.csv', index_col=0)
 FX.set_index(dates, inplace=True)
 
 # Excess Return
