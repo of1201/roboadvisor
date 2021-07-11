@@ -9,6 +9,7 @@ from OLS import *
 from RP import *
 from CVaR import *
 from robustMVO import *
+pd.set_option('display.max_columns', 20)
 
 # ================== Robo Advisor <All Weather Global Portfolio> ==============================
 dir = os.getcwd()  # wd
@@ -71,7 +72,7 @@ print("ESG ETFs left:" + str(tickers_ESG))
 
 
 # ----- input: final selected ETFs - need to update the list manually according to the above print output ------
-allocation_model = 'CVaR'
+allocation_model = 'RP'
 tickers_nonESG_equity_FI_USD = ['XNTK', 'KCE', 'XLE', 'XLV', 'XLU', 'SHY', 'TLT', 'TIP', 'LQD', 'MHWIX']
 tickers_nonESG_other_USD = ['IYR', 'GLD', 'GSG']
 tickers_nonESG_equity_FI_CAD = ['XIT.TO', 'XBB.TO', 'XRB.TO']
@@ -129,6 +130,8 @@ testStart = exRet_portf.loc[startDate:].index[0]  # each rebalancing period star
 testEnd = exRet_portf.loc[startDate:].index[6] - timedelta(days=1)   # each rebalancing period end date
 caliEnd = testStart - timedelta(days=1)  # the end of each calibration period
 NoPeriods = math.ceil((len(exRet_portf.loc[startDate:]) - 1) / rebalFreq)  # number of rebalancing periods
+testMonths = len(exRet_portf.loc[startDate:])
+testDate = exRet_portf.loc[startDate:].index
 
 # Preallocate space
 x_equity_FI_USD = np.zeros((n_equity_FI_USD, NoPeriods))
@@ -142,8 +145,7 @@ adj_R2_bar = np.zeros(NoPeriods)
 NoShares = np.zeros(n)
 NoShares_new = np.zeros(n)
 currentVal = np.zeros(NoPeriods)
-portfValue = np.zeros(NoPeriods)
-testDate = np.zeros(NoPeriods, dtype='datetime64[ns]')
+portfValue = np.zeros(testMonths)
 turnover = np.zeros(NoPeriods)
 interest = 0
 
@@ -160,8 +162,7 @@ for t in range(NoPeriods):
     # factors return for the calibration period
     ret_factor_cali = ret_factor.loc[caliEnd-timedelta(days=caliYr*365.25):caliEnd]
     currPrice = price_portf.loc[:caliEnd].iloc[-1]  # last observed price during calibration period
-    testPrice = price_portf.loc[testStart:testEnd].iloc[-1]  # rebalancing period prices
-    testDate[t] = price_portf.loc[testStart:testEnd].index[-1].value
+    testPrice = price_portf.loc[testStart:testEnd]  # rebalancing period prices
     testPeriod = len(price_portf.loc[testStart:testEnd])
 
     if t == 0:
@@ -171,10 +172,6 @@ for t in range(NoPeriods):
 
         # store the current asset weights (before rebalance)
         x0[:, t] = (currPrice * NoShares) / currentVal[t]
-
-        # loan interest accumulation
-        rf_7yr = 1.56  # used 7-year treasury rate from 2016-04-01 which is 1.56%
-        loan = loan * (1 + rf_7yr / 100) ** (testPeriod/12)  # accumulated by 7-year treasury rate
 
     # portfolio construction
     # factor model: OLS calibration + optimization model: Risk Parity, apply on each class
@@ -194,19 +191,19 @@ for t in range(NoPeriods):
 
         elif ESG == 'Yes':
             mu1, Q1, adj_R2_bar1 = OLS(ret_cali_equity_FI_USD, ret_factor_cali)
-            x_equity_FI_USD[:, t] = RP(Q1) * (countryPerc * equityFI_perc - ESGperc)
+            x_equity_FI_USD[:, t] = RP(Q1) * (countryPerc * equityFI_perc - ESGperc)  # 20%
 
             mu2, Q2, adj_R2_bar2 = OLS(ret_cali_other_USD, ret_factor_cali)
-            x_other_USD[:, t] = RP(Q2) * countryPerc * (1 - equityFI_perc)
+            x_other_USD[:, t] = RP(Q2) * countryPerc * (1 - equityFI_perc)  # 10%
 
             mu3, Q3, adj_R2_bar3 = OLS(ret_cali_equity_FI_CAD, ret_factor_cali)
-            x_equity_FI_CAD[:, t] = RP(Q3) * countryPerc * equityFI_perc
+            x_equity_FI_CAD[:, t] = RP(Q3) * countryPerc * equityFI_perc  # 40%
 
             mu4, Q4, adj_R2_bar4 = OLS(ret_cali_other_CAD, ret_factor_cali)
-            x_other_CAD[:, t] = RP(Q4) * countryPerc * (1 - equityFI_perc)
+            x_other_CAD[:, t] = RP(Q4) * countryPerc * (1 - equityFI_perc)  # 10%
 
             mu5, Q5, adj_R2_bar5 = OLS(ret_cali_ESG_equity_FI_USD, ret_factor_cali)
-            x_ESG_equity_FI_USD[:, t] = RP(Q5) * ESGperc
+            x_ESG_equity_FI_USD[:, t] = RP(Q5) * ESGperc  # 20%
 
     elif allocation_model == 'CVaR':
         if ESG == 'No':
@@ -224,19 +221,19 @@ for t in range(NoPeriods):
 
         elif ESG == 'Yes':
             mu1, Q1, adj_R2_bar1 = OLS(ret_cali_equity_FI_USD, ret_factor_cali)
-            x_equity_FI_USD[:, t] = CVaR(ret_cali_equity_FI_USD, alpha) * (countryPerc * equityFI_perc - ESGperc)
+            x_equity_FI_USD[:, t] = CVaR(ret_cali_equity_FI_USD, alpha) * (countryPerc * equityFI_perc - ESGperc)  # 20%
 
             mu2, Q2, adj_R2_bar2 = OLS(ret_cali_other_USD, ret_factor_cali)
-            x_other_USD[:, t] = CVaR(ret_cali_other_USD, alpha) * countryPerc * (1 - equityFI_perc)
+            x_other_USD[:, t] = CVaR(ret_cali_other_USD, alpha) * countryPerc * (1 - equityFI_perc)  # 10%
 
             mu3, Q3, adj_R2_bar3 = OLS(ret_cali_equity_FI_CAD, ret_factor_cali)
-            x_equity_FI_CAD[:, t] = CVaR(ret_cali_equity_FI_CAD, alpha) * countryPerc * equityFI_perc
+            x_equity_FI_CAD[:, t] = CVaR(ret_cali_equity_FI_CAD, alpha) * countryPerc * equityFI_perc  # 40%
 
             mu4, Q4, adj_R2_bar4 = OLS(ret_cali_other_CAD, ret_factor_cali)
-            x_other_CAD[:, t] = CVaR(ret_cali_other_CAD, alpha) * countryPerc * (1 - equityFI_perc)
+            x_other_CAD[:, t] = CVaR(ret_cali_other_CAD, alpha) * countryPerc * (1 - equityFI_perc)  # 10%
 
             mu5, Q5, adj_R2_bar5 = OLS(ret_cali_ESG_equity_FI_USD, ret_factor_cali)
-            x_ESG_equity_FI_USD[:, t] = CVaR(ret_cali_ESG_equity_FI_USD, alpha) * ESGperc
+            x_ESG_equity_FI_USD[:, t] = CVaR(ret_cali_ESG_equity_FI_USD, alpha) * ESGperc  # 20%
 
     elif allocation_model == 'robustMVO':
         if ESG == 'No':
@@ -272,15 +269,32 @@ for t in range(NoPeriods):
         adj_R2_bar[t] = (adj_R2_bar1 + adj_R2_bar2 + adj_R2_bar3 + adj_R2_bar4) / 4
         x[:, t] = np.append(np.append(np.append(x_equity_FI_USD[:, t], x_other_USD[:, t]), x_equity_FI_CAD[:, t]),
                             x_other_CAD[:, t])
+        tickers = tickers_nonESG_equity_FI_USD + tickers_nonESG_other_USD + tickers_nonESG_equity_FI_CAD + \
+                  tickers_nonESG_other_CAD
+        weights = pd.DataFrame(x.T, columns=tickers)
     elif ESG == 'Yes':
         adj_R2_bar[t] = (adj_R2_bar1 + adj_R2_bar2 + adj_R2_bar3 + adj_R2_bar4 + adj_R2_bar5) / 5
         x[:, t] = np.append(np.append(np.append(np.append(x_equity_FI_USD[:, t], x_other_USD[:, t]),
                                                 x_equity_FI_CAD[:, t]), x_other_CAD[:, t]), x_ESG_equity_FI_USD[:, t])
+        tickers = tickers_nonESG_equity_FI_USD + tickers_nonESG_other_USD + tickers_nonESG_equity_FI_CAD + \
+                  tickers_nonESG_other_CAD + tickers_ESG_equity_USD
+        weights = pd.DataFrame(x.T, columns=tickers)
 
     NoShares_new = x[:, t] * currentVal[t] / currPrice  # Number of shares to be allocated to each ETFs
-    trans_cost = sum(abs(NoShares_new - NoShares) * cost)
-    portfValue[t] = np.dot(testPrice, NoShares_new) - loan - trans_cost
     NoShares = NoShares_new
+    trans_cost = sum(abs(NoShares_new - NoShares) * cost)
+
+    for j in range(testPeriod):
+        index_portf = np.where(exRet_portf.loc[startDate:].index == testStart)[0][0]
+        # loan interest accumulation
+        rf_7yr = 1.56  # used 7-year treasury rate from 2016-04-01 which is 1.56%
+        loan_pay = loan * (1 + rf_7yr / 100) ** ((index_portf+j)/12)  # accumulated by 7-year treasury rate
+
+        if j == 0:
+            price_portf.loc[testStart]
+            portfValue[index_portf+j] = np.dot(testPrice, NoShares_new)[j] - loan_pay - trans_cost
+        else:
+            portfValue[index_portf+j] = np.dot(testPrice, NoShares_new)[j] - loan_pay
 
     # calculate the turnover rate
     if t > 0:
@@ -296,9 +310,11 @@ for t in range(NoPeriods):
         testEnd = exRet_portf.loc[testStart:].index[-1]  # each rebalancing period end date
         caliEnd = testStart - timedelta(days=1)  # the end of each calibration period
 
+
 # outputs:
 print('portfolio value evolution:' + str(portfValue.T))
-print('portfolio weighting:' + str(x.T))
+print(weights)  # portfolio weighting
+# print('portfolio weighting:' + str(x.T))
 print('turnover:' + str(turnover))
 print('adjusted R-squared:' + str(adj_R2_bar))
 print('date:' + str(testDate))
