@@ -281,8 +281,8 @@ for t in range(NoPeriods):
         weights = pd.DataFrame(x.T, columns=tickers)
 
     NoShares_new = x[:, t] * currentVal[t] / currPrice  # Number of shares to be allocated to each ETFs
-    NoShares = NoShares_new
     trans_cost = sum(abs(NoShares_new - NoShares) * cost)
+    NoShares = NoShares_new
 
     for j in range(testPeriod):
         index_portf = np.where(exRet_portf.loc[startDate:].index == testStart)[0][0]
