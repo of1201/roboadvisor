@@ -100,16 +100,22 @@ init_cap = cap * (1+leverage)  # total initial capital including leverage
 loan = cap * leverage  # loan at start of investment period; interest rate = RFR
 
 # 3. system implementation
-price_portf = df_nonESG.iloc[1:].loc[:reportDate].copy()  # investment portfolio's monthly price dataset
 exRet_portf = exRet_nonESG.copy()  # portfolio excess return dataset
 # separate by asset class
 exRet_equity_FI_USD = pd.DataFrame(exRet_portf, columns=tickers_nonESG_equity_FI_USD)
 exRet_other_USD = pd.DataFrame(exRet_portf, columns=tickers_nonESG_other_USD)
 exRet_equity_FI_CAD = pd.DataFrame(exRet_portf, columns=tickers_nonESG_equity_FI_CAD)
 exRet_other_CAD = pd.DataFrame(exRet_portf, columns=tickers_nonESG_other_CAD)
-# apply FX on USD ETFs
-price_portf[tickers_nonESG_equity_FI_USD + tickers_nonESG_other_USD] = \
-    price_portf[tickers_nonESG_equity_FI_USD + tickers_nonESG_other_USD].mul(FX['Price'], axis=0)
+
+if ESG == 'No':
+    price_portf = df_nonESG.iloc[1:].loc[:reportDate].copy()  # investment portfolio's monthly price dataset
+    # apply FX on USD ETFs
+    price_portf[tickers_nonESG_equity_FI_USD + tickers_nonESG_other_USD] = \
+        price_portf[tickers_nonESG_equity_FI_USD + tickers_nonESG_other_USD].mul(FX['Price'], axis=0)
+    price_portf = pd.concat([price_portf[tickers_nonESG_equity_FI_USD], price_portf[tickers_nonESG_other_USD],
+                             price_portf[tickers_nonESG_equity_FI_CAD], price_portf[tickers_nonESG_other_CAD]],
+                            axis=1).copy()
+
 if ESG == 'Yes':
     price_portf = pd.concat([df_nonESG, df_ESG], axis=1).iloc[1:].loc[:reportDate].copy()
     exRet_portf = pd.concat([exRet_nonESG, exRet_ESG], axis=1).copy()
@@ -119,6 +125,11 @@ if ESG == 'Yes':
     price_portf[tickers_nonESG_equity_FI_USD + tickers_nonESG_other_USD + tickers_ESG_equity_USD] = \
         price_portf[tickers_nonESG_equity_FI_USD + tickers_nonESG_other_USD + tickers_ESG_equity_USD].mul(FX['Price'],
                                                                                                           axis=0)
+    price_portf = pd.concat([price_portf[tickers_nonESG_equity_FI_USD], price_portf[tickers_nonESG_other_USD],
+                             price_portf[tickers_nonESG_equity_FI_CAD], price_portf[tickers_nonESG_other_CAD],
+                             price_portf[tickers_ESG_equity_USD]],
+                            axis=1).copy()
+
 
 n = exRet_portf.shape[1]  # number of ETFs in the portfolio
 n_equity_FI_USD = exRet_equity_FI_USD.shape[1]  # number of USD ETFs (equity+FI)
