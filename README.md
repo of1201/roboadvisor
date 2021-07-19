@@ -4,6 +4,7 @@ robo advisor documentation
 - risk lab.ipynb: this jupyter notebook python file is the main program that contains all the code for our system implementation as well as report generation. 
   * It also contains two blocks of code (block [6] and [7]) that are for backtesting with some parameters preset instead of imported from our user interface "AWGP_RoboAdvisor.xlsx". When running backtesting, the main program's code (block [8] and [9]) should be commented out. 
   * It contains the code for risk models, sensitivity/scenario analysis, generating performance & risk metrics, as well as exporting the report metrics and graphs to the user interface "report.xlsx".
+  * Portfolio manager (us) can set the asset allocation model and ETFs tickers based on our model selection and backtesting result at the end of block [8]. In backtesting, we can also set which model to test at the end of block [6].
 
 - AWGP_RoboAdvisor.xlsx: user interface. It has a short description of our robo advisor and users can input their information that helps construct their customized portfolio.
 
