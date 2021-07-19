@@ -1,4 +1,4 @@
-# robo advisor
+# AWGP robo advisor
 robo advisor documentation
 
 - risk lab.ipynb: this jupyter notebook python file is the main program that contains all the code for our system implementation as well as report generation. 
