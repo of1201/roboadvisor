@@ -8,6 +8,7 @@ robo advisor documentation
 - AWGP_RoboAdvisor.xlsx: user interface. It has a short description of our robo advisor and users can input their information that helps construct their customized portfolio.
 
 - Report.xlsx: It is the Excel template that we use to let our system automatically export the client report into. The cell and page format is preset.
+  * Every time you run our program "risk lab.ipynb", it write the output to "Report.xlsx". So before you run the program again, you should first prepare the empty "Report.xlsx" again so the program outputs the results to it smoothly.
 
 - Benchmark.xlsx: Contains the historical price (2007-01-01 to 2021-05-31) of 4 benchmarks that represent 4 asset classes - equity, fixed income, real estate and commodity - respectively. 
 
