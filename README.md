@@ -1,17 +1,29 @@
 # robo advisor
 robo advisor documentation
 
--AWGP_RoboAdvisor.xlsx: user interface. It has a short description of our robo advisor and users can input their information that helps construct their customized portfolio.
+- risk lab.ipynb: this jupyter notebook python file is the main program that contains all the code for our system implementation as well as report generation. 
+  * It also contains two blocks of code (block [6] and [7]) that are for backtesting with some parameters preset instead of imported from our user interface "AWGP_RoboAdvisor.xlsx". When running backtesting, the main program's code (block [8] and [9]) should be commented out. 
+  * It contains the code for risk models, sensitivity/scenario analysis, generating performance & risk metrics, as well as exporting the report metrics and graphs to the user interface "report.xlsx".
 
-- roboadvisor.py:
-1. grab users' input data from the excel workbook "AWGP_RoboAdvisor"
-2. link to our ETFs, factors, FX database. Select ETFs with low correlations historically. Finally kept 15 non-ESG ETFs and 3 ESG ETFs.
-3. set test period and calibration period for each rebalancing point.
-4. calibrate the OLS regression model to get the VCV matrix and run Risk-Parity to obtain the optimal weights for each ETFs within each asset class, for each country.
-5. output the portfolio value evolution, portfolio weighting, adjusted R-squared, timne series date and asset turnover.
+- AWGP_RoboAdvisor.xlsx: user interface. It has a short description of our robo advisor and users can input their information that helps construct their customized portfolio.
 
-- RP.py:
-1. wrote the function RP(Q) that takes the VCV matrix as the input and output the optimal weightings.
+- Report.xlsx: It is the Excel template that we use to let our system automatically export the client report into. The cell and page format is preset.
 
-- OLS.py:
-1. constructed the OLS regression model in the function OLS(returns, factRet).
+- Benchmark.xlsx: Contains the historical price (2007-01-01 to 2021-05-31) of 4 benchmarks that represent 4 asset classes - equity, fixed income, real estate and commodity - respectively. 
+
+- NonESG_Prices.xlsx: Contains the historical price (2007-01-01 to 2021-05-31) of 36 pre-selected non-ESG ETFs that are from the 4 asset classes mentioned above. These ETFs are in CAD or USD and some of them have international exposure.
+
+- ESG_Prices.xlsx: Contains the historical price (2007-01-01 to 2021-05-31) of 4 pre-selected ESG ETFs. They are all equity ETFs.
+
+- FF_5_Factor.csv / FF_5_Factor_all.csv: Contains the historical price for the Fama-French five factors. FF_5_Factor.csv has prices from 2007-01-01 to 2021-05-31 and FF_5_Factor_all.csv has prices from 1963-08-01 to 2021-05-31.
+
+- Historical_Data.xlsx: Contains older price data for the 36 non-ESG ETFs and the 4 ESG ETFs (from 1998-01-01 to 2021-05-31). 
+
+- Macro_Data.xlsx: Contains the historical price (2007-01-01 to 2021-05-31) of 16 macroeconomic factors such as unemployment rate, crude oil price, and housing data.
+
+- USD_CAD_Historical_Data.csv: It contains the historical USD to CAD foreign exchange rates data (2007-01-01 to 2021-05-31).
+
+- beta.xlsx: This file shows the beta of all the ETFs that we finally select to be included in our portfolio.
+
+- sensitivity.xlsx: This file contains our sensitivity/stress backtesting results for all 3 of our asset allocation models: CVaR, RP and robust MVO.
+
