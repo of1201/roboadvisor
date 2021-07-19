@@ -1,5 +1,7 @@
-# roboadvisor
-robo advisor system implementation:
+# robo advisor
+robo advisor documentation
+
+-AWGP_RoboAdvisor.xlsx: user interface. It has a short description of our robo advisor and users can input their information that helps construct their customized portfolio.
 
 - roboadvisor.py:
 1. grab users' input data from the excel workbook "AWGP_RoboAdvisor"
